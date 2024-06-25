@@ -44,10 +44,10 @@ const signup = async (req, res) => {
 
     const token = jwt.sign({ email: user.email, id: user.id }, SECRET_KEY);
 
-    res.status(201).json({ user: user, token: token });
+    return res.status(201).json({ user: user, token: token });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "something went wrong" });
+    return res.status(500).json({ message: "something went wrong" });
   }
 };
 
@@ -73,22 +73,22 @@ const signin = async (req, res) => {
 
     const compareHashPassword = await bcrypt.compare(
       password,
-      checkExistingUserQuery.rows.password,
-      (err, result) => {
-        // Compare hash password
-        if (err) {
-          res.status(500).json({ message: "Password is incorrect" });
-        }
-      }
+      checkExistingUserQuery.rows[0].password
     );
 
-    const compareUserToken = jwt.sign({ email: email }, SECRET_KEY);
-    res.status(200).json({
+    // console.log(compareHashPassword);
+    // Compare hash password
+    if (!compareHashPassword) {
+      return res.status(500).json({ message: "Password is incorrect" });
+    }
+
+    // const compareUserToken = jwt.sign({ email: email }, SECRET_KEY);
+    return res.status(200).json({
       message: "User Signed In",
-      compareHashPassword: compareHashPassword,
+      userData: checkExistingUserQuery.rows[0],
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error...." });
+    return res.status(500).json({ message: "Server error...." });
   }
 };
 
